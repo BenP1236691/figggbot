@@ -24,48 +24,57 @@ async def on_ready():
     print(f"Logged in as {bot.user.name} - {bot.user.id}")
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name=f"with {len(bot.guilds)} servers"))
     
-# on message
+#on message balance 
+
 @bot.event
 async def on_message(message):
-    await bot.process_commands(message)
     if message.author == bot.user:
         return
-    if message.content.startswith("$ping"):
-        await message.channel.send(f"Pong! {round(bot.latency * 1000)}ms")
+    if message.content.startswith("$balance"):
+        await message.channel.send(f"Your balance is {message.author.balance}")
         return
-    
+    if message.content.startswith("$roll"):
+        number = random.randint(1, 6)
+        await message.channel.send(f"You rolled {number} and your new balance is {message.author.balance}")
+        message.author.balance += number
+        return
 
-# on command
+# make a robbing system that can be used to rob someone
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+    if message.content.startswith("$rob"):
+        await message.channel.send(f"You robbed {message.mentions[0]} for {message.author.balance}")
+        message.author.balance -= message.mentions[0].balance
+        message.mentions[0].balance = 0
+        return
+
+
+# on command ping
 @bot.command()
-async def say(ctx, *, message):
-    await ctx.send(message)
-    return
 
-@bot.command()
-async def roll(ctx):
-    await ctx.send(random.randint(1, 6))
-    return 
-
-# on slash command
-@bot.tree.command(name="ping")
 async def ping(ctx):
     await ctx.send(f"Pong! {round(bot.latency * 1000)}ms")
     return
 
-@bot.tree.command(name="roll")
-async def roll(ctx):
-    await ctx.send(random.randint(1, 6))
-    return
+# on command say
 
-@bot.tree.command(name="say")
+@bot.command()
 async def say(ctx, *, message):
     await ctx.send(message)
     return
 
-@bot.tree.command(name="help")
-async def help(ctx):
-    await ctx.send(ctx.tree)
+# on command roll
+
+@bot.command()
+async def roll(ctx):
+    number = random.randint(1, 6)
+    await ctx.send(f"You rolled a {number}")
     return
+
+
 
 
 
